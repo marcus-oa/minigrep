@@ -25,7 +25,7 @@ impl Config {
     }
 }
 
-// As part of 'Seperation o concerns for Binary Projects
+// As part of 'Separation of concerns for Binary Projects
 // we remove all code from main which doesn't involve setting
 // up the config
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
