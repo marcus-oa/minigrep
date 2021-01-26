@@ -1,7 +1,7 @@
 // Bringing in std::env means the calls for env
 // functions are less ambiguous (i.e. env::args is from env)
-use std::env;
-use std::fs;
+use std::{env, process};
+use minigrep::Config;
 
 fn main() {
     // Collect can create many kinds of collections
@@ -9,31 +9,22 @@ fn main() {
     // create said type
     let args: Vec<String> = env::args().collect();
 
-    let config = parse_config(&args);
+    // Handling errors here produces a nicer output to the terminal
+    // on arg pass failure
+    let config = Config::new(&args).unwrap_or_else(|err| {
+        println!("Problem parsing arguements: {}", err);
+        process::exit(1);
+    });
 
     println!("Searching for {}", config.query);
     println!("In file {}", config.filename);
 
-    let contents = fs::read_to_string(config.filename)
-        .expect("Something went wrong reading the file");
+    // Note: we use 'if let' instead of unwrap_or_else as
+    // run(config) doesn't return a value we want to unwrap
+    // unlike config above
+    if let Err(e) = minigrep::run(config) {
+        println!("Application error: {}", e);
 
-    println!("With text:\n{}", contents);
-}
-
-// Necessary abstraction
-struct Config {
-    query: String,
-    filename: String
-}
-
-// Note: As a rule we keep the argument passing from command
-// line within the main.rs file as long as it relatively short
-fn parse_config(args: &[String]) -> Config {
-    // Note: &args[0] = `target/debug/minigrep`
-    // Note+: Clone ensures that we don't violate rust rules
-    // of taking ownership of the values passed into the fn
-    let query = args[1].clone;
-    let filename = args[2].clone;
-
-    Config { query, filename }
+        process::exit(1);
+    }
 }
