@@ -14,7 +14,7 @@ impl Config {
     // entire lifetime of the program (Useful for errors)
     pub fn new(args: &[String]) -> Result<Config, &'static str> {
         if args.len() < 3 {
-            return Err("Not enough arguements");
+            return Err("Not enough arguments");
         }
         // Note: &args[0] = `target/debug/minigrep`
         // Note+: Clone ensures that we don't violate rust rules

@@ -12,7 +12,7 @@ fn main() {
     // Handling errors here produces a nicer output to the terminal
     // on arg pass failure
     let config = Config::new(&args).unwrap_or_else(|err| {
-        println!("Problem parsing arguements: {}", err);
+        eprintln!("Problem parsing arguements: {}", err);
         process::exit(1);
     });
 
@@ -20,7 +20,7 @@ fn main() {
     // run(config) doesn't return a value we want to unwrap
     // unlike config above
     if let Err(e) = minigrep::run(config) {
-        println!("Application error: {}", e);
+        eprintln!("Application error: {}", e);
 
         process::exit(1);
     }
