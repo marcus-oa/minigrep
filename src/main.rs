@@ -16,9 +16,6 @@ fn main() {
         process::exit(1);
     });
 
-    println!("Searching for {}", config.query);
-    println!("In file {}", config.filename);
-
     // Note: we use 'if let' instead of unwrap_or_else as
     // run(config) doesn't return a value we want to unwrap
     // unlike config above
