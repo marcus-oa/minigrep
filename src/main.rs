@@ -4,14 +4,10 @@ use std::{env, process};
 use minigrep::Config;
 
 fn main() {
-    // Collect can create many kinds of collections
-    // Specifying the type of the variable ensures we
-    // create said type
-    let args: Vec<String> = env::args().collect();
-
     // Handling errors here produces a nicer output to the terminal
     // on arg pass failure
-    let config = Config::new(&args).unwrap_or_else(|err| {
+    // Note: We now pass the fully owned args to the 'new' method
+    let config = Config::new(env::args()).unwrap_or_else(|err| {
         eprintln!("Problem parsing arguements: {}", err);
         process::exit(1);
     });

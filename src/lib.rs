@@ -1,5 +1,6 @@
 use std::error::Error;
 use std::{fs, env};
+use std::env::Args;
 
 // Necessary abstraction
 pub struct Config {
@@ -12,15 +13,23 @@ pub struct Config {
 impl Config {
     // 'static lifetime ensures the str value is stored for the
     // entire lifetime of the program (Useful for errors)
-    pub fn new(args: &[String]) -> Result<Config, &'static str> {
-        if args.len() < 3 {
-            return Err("Not enough arguments");
-        }
-        // Note: &args[0] = `target/debug/minigrep`
-        // Note+: Clone ensures that we don't violate rust rules
-        // of taking ownership of the values passed into the fn
-        let query = args[1].clone();
-        let filename = args[2].clone();
+    // Note: 'new' function now accepts env:Args as a mutable owned
+    // iterator
+    pub fn new(mut args: env::Args) -> Result<Config, &'static str> {
+        // required to get passed the name of the program which is the default first
+        // argument
+        args.next();
+
+        // Clone usage replaced with direct iteration over args
+        let query = match args.next() {
+            Some(arg) => arg,
+            None => return Err("Didn't get a query string"),
+        };
+        let filename = match args.next() {
+            Some(arg) => arg,
+            None => return Err("Didn't get a file name"),
+        };
+
         // Note: Checks whether CASE_INSENSITIVE=1 is set
         // if not, is_err() is true and the value is set to true, otherwise false
         let case_sensitive = env::var("CASE_INSENSITIVE").is_err();
@@ -52,37 +61,19 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
 // and as we only ever return references to contents we don't need
 // to apply to the 'query' param
 pub fn search_case_sensitive<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
-    let mut results = Vec::new();
-
-    // convenient method for line iteration (.lines())
-    for line in contents.lines() {
-        // again, another convenient method for checking the
-        // contents of a string
-        if line.contains(query) {
-            // store the line in a vector
-            results.push(line);
-        }
-    }
-
-    results
+    contents
+        .lines()
+        .filter(|line| line.contains(query))
+        .collect()
 }
 
 // An implementation of search_case_sensitive but for insensitive values
 pub fn search_case_insensitive<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
     let query = query.to_lowercase();
-    let mut results = Vec::new();
-
-    // convenient method for line iteration (.lines())
-    for line in contents.lines() {
-        // again, another convenient method for checking the
-        // contents of a string
-        if line.to_lowercase().contains(&query) {
-            // store the line in a vector
-            results.push(line);
-        }
-    }
-
-    results
+    contents
+        .lines()
+        .filter(|line| line.to_lowercase().contains(&query))
+        .collect()
 }
 
 #[cfg(test)]
